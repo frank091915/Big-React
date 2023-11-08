@@ -1,0 +1,30 @@
+{
+    "env": {
+     "browser": true,
+     "es2021": true,
+     "node": true
+    },
+    // 在plugins的规则合集里，继承使用哪些规则
+    "extends": [
+     "eslint:recommended",
+     "plugin:@typescript-eslint/recommended",
+     "prettier",
+     "plugin:prettier/recommended"
+    ],
+    // 用什么解析器来将代码解析为ast抽象语法树，默认的eslint解析器不能解析typescript，所以我们利用社区实现的解析器来解析
+    "parser": "@typescript-eslint/parser",
+    // 解析器规则
+    "parserOptions": {
+    // 将当前项目代码当作哪个版本的ecmascript版本来解析
+     "ecmaVersion": "latest",
+     "sourceType": "module"
+    },
+    // 规则的合集
+    "plugins": ["@typescript-eslint", "prettier"],
+    "rules": {
+     "prettier/prettier": "error",
+     "no-case-declarations": "off",
+     "no-constant-condition": "off",
+     "@typescript-eslint/ban-ts-comment": "off"
+    }
+ }
