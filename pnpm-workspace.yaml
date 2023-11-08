@@ -1,0 +1,4 @@
+packages:
+  # all packages in direct subdirs of packages/
+  # 所有根目录下，package文件内的项目都是mono-repo项目
+  - 'packages/*'
