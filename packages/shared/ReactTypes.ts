@@ -12,3 +12,6 @@ export interface ReactElementType {
   props: Props;
   _mark: string;
 }
+
+// 泛型类型 Action<State> 可以返回一个State类型, 也可以返回一个接受任意类型参数然后返回这一类型值的函数
+export type Action<State> = State | ((preState: State) => State);

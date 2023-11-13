@@ -17,10 +17,11 @@ function renderRoot(root: FiberNode) {
   // 开始遍历
   do {
     try {
-      function workLoop();
+      workLoop();
       break;
     } catch (err) {
       console.log("sth went wrong when runing workloop");
+      workInProgress = null;
     }
   } while (true);
 }
@@ -57,7 +58,7 @@ function completeUnitOfWork(fiber: FiberNode) {
     const sibling = node.sibling;
 
     if (sibling !== null) {
-      // 兄弟节点进入第阶段
+      // 兄弟节点进入递阶段
       workInProgress = sibling;
       return;
     }
@@ -65,3 +66,4 @@ function completeUnitOfWork(fiber: FiberNode) {
     workInProgress = node;
   } while (node !== null);
 }
+console.log(renderRoot, workLoop);
