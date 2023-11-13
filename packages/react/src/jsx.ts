@@ -1,6 +1,6 @@
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols";
 import { Type, Key, Ref, Props, ReactElementType } from "shared/ReactTypes";
-// ReactElement 数组结构
+// ReactElement 数据结构
 const ReactElement = function (
   type: Type,
   key: Key,
