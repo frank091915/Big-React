@@ -1,6 +1,5 @@
 import { FiberNode } from "./fiber";
-// 递阶段：beginWork
-export const beginWork = (fiber: FiberNode) => {
-  // 比较 reactElement 和 fiberNode, 生成返回子FiberNode
+export const completeWork = (fiber: FiberNode) => {
+  // 归阶段
   console.log(fiber);
 };

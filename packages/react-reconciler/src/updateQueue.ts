@@ -30,7 +30,7 @@ export const createUpdateQueue = <Action>(): UpdateQueue<Action> => {
 };
 
 // 将update插入updateQueue的方法
-export const enQueueUpdate = <Action>(
+export const enqueueUpdate = <Action>(
   updateQueue: UpdateQueue<Action>,
   update: Update<Action>,
 ) => {

@@ -1,6 +1,10 @@
 import { Props, Key, Ref } from "shared/ReactTypes";
 import { WorkTag } from "./workTags";
 import { FlagType, noFlags } from "./fiberFlags";
+// 为啥不直接引用当前目录的hostConfig呢，这是因为不同宿主环境有不同的container，
+// 直接写死引用当前目录的hostConfig的话，把hostConfig的实现限制在了react-reconciler包,
+// react-dom包也会有自己的hostConfig, 我猜后面会用到不同环境的hostConfig
+import { Container } from "hostConfig";
 export class FiberNode {
   /**
    * @param tag fiber type
@@ -19,7 +23,9 @@ export class FiberNode {
   child: FiberNode | null;
   index: number;
 
-  memoizedProops: Props | null;
+  memoizedProps: Props | null;
+  memoizedState: any;
+  updateQueue: unknown;
   alternate: Props | null;
   flags: FlagType;
 
@@ -49,7 +55,9 @@ export class FiberNode {
     // 这个工作单元刚开始工作的时候 的 props
     this.pendingProps = pendingProps;
     // 工作完后(最终确定下来的props)
-    this.memoizedProops = null;
+    this.memoizedProps = null;
+    this.memoizedState = null;
+    this.updateQueue = null;
 
     // 用于指向 另一颗树的FiberNode, 如果是current树的FiberNode,
     // 那么alternate指向workInProgress中对应的FiberNode, 反之亦然
@@ -58,3 +66,46 @@ export class FiberNode {
     this.flags = noFlags;
   }
 }
+
+export class FiberRootNode {
+  // container保存的是在宿主环境挂载的节点，所以不只是dom节点，浏览器环境中container应该是DOMElement类型
+  container: Container;
+  current: FiberNode;
+  finishedWork: FiberNode | null; // 更新完成后的 hostRootFiber
+  constructor(container: Container, hostRootFiber: FiberNode) {
+    this.container = container;
+    this.current = hostRootFiber;
+    hostRootFiber.stateNode = this;
+    this.finishedWork = null;
+  }
+}
+
+export const createWorkInProgress = (
+  current: FiberNode,
+  pendingProps: Props,
+): FiberNode => {
+  let wip = current.alternate;
+  if (wip == null) {
+    // mount
+    // 新建一个 wip
+    wip = new FiberNode(current.tag, pendingProps, current.key);
+    // 继承stateNode
+    wip.stateNode = current.stateNode;
+
+    // 通过alternate连接wip和current
+    wip.alternate = current;
+    current.alternate = wip;
+  } else {
+    // update
+    wip.pendingProps = current.pendingProps;
+    // cleanup effects
+    wip.flags = noFlags;
+  }
+  // 继承type和type,child,memoizedProps和memoizedState
+  wip.type = current.type;
+  wip.child = current.child;
+  wip.memoizedProps = current.memoizedProps;
+  wip.memoizedState = current.memoizedState;
+
+  return wip;
+};
