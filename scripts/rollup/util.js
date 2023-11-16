@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import ts from "rollup-plugin-typescript2";
 import cjs from "@rollup/plugin-commonjs";
+import replace from "@rollup/plugin-replace";
 // 获取packages和打包后的对应路径
 const pkgPath = path.resolve(__dirname, "../../packages");
 // 打包后的产物会放在dist下的node_modules目录
@@ -20,6 +21,11 @@ export function getPakcageJson(pkgName) {
 
 // 创建一个返回常用rollup plugin的方法
 // 安装两个: 解析commonJS的 将源码的ts解析为js的
-export function getCommonPlugins({ typeScript } = {}) {
-  return [cjs(), ts({ typeScript })];
+export function getCommonPlugins({
+  alias = {
+    __DEV__: true,
+  },
+  typeScript = {},
+} = {}) {
+  return [replace(alias), cjs(), ts({ typeScript })];
 }

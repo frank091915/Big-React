@@ -1,5 +1,5 @@
-import { Props, Key, Ref } from "shared/ReactTypes";
-import { WorkTag } from "./workTags";
+import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes";
+import { FunctionComponent, HostComponent, WorkTag } from "./workTags";
 import { FlagType, noFlags } from "./fiberFlags";
 // 为啥不直接引用当前目录的hostConfig呢，这是因为不同宿主环境有不同的container，
 // 直接写死引用当前目录的hostConfig的话，把hostConfig的实现限制在了react-reconciler包,
@@ -58,7 +58,6 @@ export class FiberNode {
     this.memoizedProps = null;
     this.memoizedState = null;
     this.updateQueue = null;
-
     // 用于指向 另一颗树的FiberNode, 如果是current树的FiberNode,
     // 那么alternate指向workInProgress中对应的FiberNode, 反之亦然
     this.alternate = null;
@@ -108,4 +107,20 @@ export const createWorkInProgress = (
   wip.memoizedState = current.memoizedState;
 
   return wip;
+};
+
+export const createFiberFromElement = (element: ReactElementType) => {
+  const { type, key, props } = element;
+  // 先假设tag为FunctionComponent
+  let fiberTag: WorkTag = FunctionComponent;
+  if (typeof type === "string") {
+    // 如果是 hostComponent,那么这个reactElement的type为 html的tag字符串
+    fiberTag = HostComponent;
+  } else if (type !== "function" && __DEV__) {
+    // 开发时尽量想到边界场景，打印消息方便调试
+    console.warn("未定义的类型", element);
+  }
+  const childFiber = new FiberNode(fiberTag, props, key);
+  childFiber.type = type;
+  return childFiber;
 };
