@@ -28,6 +28,7 @@ export class FiberNode {
   updateQueue: unknown;
   alternate: Props | null;
   flags: FlagType;
+  subTreeFlags: FlagType;
 
   constructor(tag: WorkTag, pendingProps: Props, key: Key) {
     // 实例
@@ -63,6 +64,7 @@ export class FiberNode {
     this.alternate = null;
     // 副作用
     this.flags = noFlags;
+    this.subTreeFlags = noFlags;
   }
 }
 
@@ -99,6 +101,7 @@ export const createWorkInProgress = (
     wip.pendingProps = current.pendingProps;
     // cleanup effects
     wip.flags = noFlags;
+    wip.subTreeFlags = noFlags;
   }
   // 继承type和type,child,memoizedProps和memoizedState
   wip.type = current.type;

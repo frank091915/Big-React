@@ -44,6 +44,13 @@ function renderRoot(root: FiberRootNode) {
       workInProgress = null;
     }
   } while (true);
+  // workLoop完成后,一颗完成的wip fiberTree已经生成, 就是一开始通过createWorkInProgress(root.current, {})创建的fiberNode,
+  // 此时它已经拥有完整的子节点，并且包含了所以子节点的flags-subTreeFlags
+  const finishedWork = root.current.alternate;
+  root.finishedWork = finishedWork;
+
+  // wip fiberTree构建完成后,开始commit阶段
+  // commitRoot(root)
 }
 
 // 开启遍历，每次循环就是一次工作，由performUnitOfWork执行
