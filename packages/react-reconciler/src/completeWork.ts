@@ -11,8 +11,8 @@ export const completeWork = (wip: FiberNode) => {
   const current = wip.alternate;
   // 归阶段
   // 根据tag对fiber进行不同操作
-  // hostRoot收集子fiber的flags
-  // hostComponent 创建dom实例, 然后将子
+  // hostComponent 创建dom实例, 然后将下一层所有子fiber对应的dom插入parent中
+  // hostRoot收集下一层所有子fiber的flags
   switch (wip.tag) {
     case HostRoot:
       bubbleProperties(wip);
@@ -78,7 +78,7 @@ export const appendAllChildren = (parent: FiberNode, wip: FiberNode) => {
 
     // 一直往上找到有sibling的节点，跳过之前遍历过的节点，从之前没遍历到的sibling开始遍历
     while (node.sibling === null) {
-      // 终止情况: 当回到原点时终止遍历
+      // 终止情况: 当回到hostRoot或原点时终止遍历
       if (node.return === null || node === wip) {
         return;
       }
@@ -91,9 +91,9 @@ export const appendAllChildren = (parent: FiberNode, wip: FiberNode) => {
   }
 };
 
-// flags散落在不同各个fiber节点，怎么快速找到他们
-// 可以利用completeWork向上遍历阶段可以将子fiber的flags冒泡到父fiber节点
-// 给fiberNode添加一个subtreeFlags代表子fiber的flags
+// flags散落在不同各个fiber节点，怎么快速找到他们?
+// 可以利用completeWork向上遍历阶段可以将子fiber的flags一层一层冒泡到父fiber节点
+// 给fiberNode添加一个subtreeFlags保存子fiber的flags
 function bubbleProperties(wip: FiberNode) {
   let subtreeFlags = noFlags;
   let child = wip.child;

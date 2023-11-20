@@ -40,6 +40,7 @@ export const updateHostComponent = (wip: FiberNode) => {
   // <div>123</div> 子节点的reactElement为hostTextComponent, children为123
   const props = wip.pendingProps;
   const nextChildren = props.children; // props.children可能是 reactElement对象也可能是 字符串或数字
+  // 该过程是通过pendingProps的children生成子fiberNode, 如果组件是<div>react</div>那么他的pendingProps.children是react字符串
   // 对比子reactElement和子current fiberNode，生成子wip fiberNode
   reconcileChildren(wip, nextChildren);
   return wip.child;

@@ -1,6 +1,7 @@
 import { beginWork } from "./beginWork";
 import { completeWork } from "./completeWork";
 import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber";
+import { MutationFlags, noFlags } from "./fiberFlags";
 import { HostRoot } from "./workTags";
 // 整体递归流程
 // 全局的指针 指向当前FiberNode节点
@@ -50,7 +51,32 @@ function renderRoot(root: FiberRootNode) {
   root.finishedWork = finishedWork;
 
   // wip fiberTree构建完成后,开始commit阶段
-  // commitRoot(root)
+  commitRoot(root);
+}
+
+function commitRoot(root: FiberRootNode) {
+  const finishedWork = root.finishedWork;
+  if (finishedWork === null) {
+    // 排除异常参数
+    return;
+  }
+  // 重置root.finishedWork
+  root.finishedWork = null;
+
+  // 判断root.current.alternate(hostRoot.wip)和自身和子节点是否存在flags
+  const subtreeHasEffect =
+    (finishedWork.subTreeFlags & MutationFlags) !== noFlags;
+  const rootHostEffect = (finishedWork.flags & MutationFlags) !== noFlags;
+  if (subtreeHasEffect || rootHostEffect) {
+    // beforeMutation
+    // mutation
+    // TODO: 提交mutation
+    // fiber树切换发生在 mutation 和 layout阶段之间
+    root.current = finishedWork;
+    // layout
+  } else {
+    root.current = finishedWork;
+  }
 }
 
 // 开启遍历，每次循环就是一次工作，由performUnitOfWork执行
