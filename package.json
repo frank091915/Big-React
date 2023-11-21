@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev:build": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/react.config.js",
+    "build:dev": "rimraf dist && rollup --bundleConfigAsCjs --config scripts/rollup/dev.config.js",
     "lint": "eslint --ext .js,.ts,.jsx,.tsx --fix --quiet ./packages",
     "prettier": "prettier --write '**/*.+(js|ts|jsx|tsx)'  ./packages"
   },
@@ -15,6 +15,7 @@
   "devDependencies": {
     "@commitlint/cli": "^18.2.0",
     "@commitlint/config-conventional": "^18.1.0",
+    "@rollup/plugin-alias": "^5.0.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",

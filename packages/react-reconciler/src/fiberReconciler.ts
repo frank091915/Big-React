@@ -18,6 +18,7 @@ export const createContainer = (container: Container) => {
   const root = new FiberRootNode(container, hostRootFiber);
   // 给hostRootFiber创建一个updateQueue与更新机制对接
   hostRootFiber.updateQueue = createUpdateQueue();
+  console.log(hostRootFiber, "createContainer hostRootFiber");
   return root;
 };
 
@@ -32,6 +33,7 @@ export const updateContainer = (
     hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
     update,
   );
+  console.log(hostRootFiber, "hostRootFiber");
   scheduleUpdateOnFiber(hostRootFiber);
   return reactElement;
 };

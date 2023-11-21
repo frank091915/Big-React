@@ -108,6 +108,8 @@ export const createWorkInProgress = (
   wip.child = current.child;
   wip.memoizedProps = current.memoizedProps;
   wip.memoizedState = current.memoizedState;
+  // issue 不要忘记继承current的updateQueue,不然wip到时候没有updateQueue为null,导致计算最新状态时会报错
+  wip.updateQueue = current.updateQueue;
 
   return wip;
 };

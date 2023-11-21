@@ -19,6 +19,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     currentFiber: FiberNode | null,
     children: ReactElementType,
   ) => {
+    console.log(currentFiber);
     // 根据reactElement创建fiber
     const fiber = createFiberFromElement(children);
     // 创建好子fiber后，与return连接
@@ -31,6 +32,8 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     currentFiber: FiberNode | null,
     content: string | number,
   ) => {
+    console.log(currentFiber);
+
     // 直接创建HostTextComponent
     const fiber = new FiberNode(HostText, { content }, null);
     // 创建好子fiber后，与return连接
@@ -67,6 +70,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     if (__DEV__) {
       console.warn("未实现的reconscile类型", newChild);
     }
+    return null;
   };
 };
 

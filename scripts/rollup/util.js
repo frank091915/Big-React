@@ -14,6 +14,7 @@ export function resolvePackagePath(packageName, isDist) {
 export function getPakcageJson(pkgName) {
   // 获取包的json，首先需要找到包的路径
   const packagePath = `${resolvePackagePath(pkgName)}/package.json`;
+  console.log(packagePath, "packagePath");
   // 将package读取为字符串
   const str = fs.readFileSync(packagePath, { encoding: "utf-8" });
   return JSON.parse(str);
@@ -24,6 +25,7 @@ export function getPakcageJson(pkgName) {
 export function getCommonPlugins({
   alias = {
     __DEV__: true,
+    preventAssignment: true,
   },
   typeScript = {},
 } = {}) {

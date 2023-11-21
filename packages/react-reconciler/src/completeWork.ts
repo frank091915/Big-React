@@ -3,6 +3,7 @@ import {
   createInstance,
   createTextInstance,
 } from "hostConfig";
+import { Container } from "react-dom/src/hostConfig";
 import { FiberNode } from "./fiber";
 import { noFlags } from "./fiberFlags";
 import { HostComponent, HostRoot, HostText } from "./workTags";
@@ -18,7 +19,8 @@ export const completeWork = (wip: FiberNode) => {
       bubbleProperties(wip);
       return null;
     case HostComponent:
-      if (current !== null) {
+      // current === null时，才是mount阶段
+      if (current === null) {
         // mount
         // 构建dom 这一步不一定生成浏览器中的dom节点，和宿主环境有关
         const instance = createInstance(wip.type, newProps);
@@ -32,7 +34,7 @@ export const completeWork = (wip: FiberNode) => {
       bubbleProperties(wip);
       return null;
     case HostText:
-      if (current !== null) {
+      if (current === null) {
         // mount
         const instance = createTextInstance(newProps.content);
         // hostText没有child所以不需要appendAllChildren
@@ -53,7 +55,7 @@ export const completeWork = (wip: FiberNode) => {
 // <B><A/></B> 如果父节点只有一个字节点的话，只需要直接插入字节点对应的stateNode
 // <B>react<A/><A/></B> 多个字节点的话，对于子节点来说，还需要插入兄弟节点
 // 将该节点下面所有子dom插入fiber中,因为fiber和dom节点不是一一对应的，所以要判断tag拿到dom节点
-export const appendAllChildren = (parent: FiberNode, wip: FiberNode) => {
+export const appendAllChildren = (parent: Container, wip: FiberNode) => {
   let node = wip.child;
   while (node != null) {
     // 第一步，首先向下遍历到第一层dom节点, HostComponent和HostText就插入到父节点,

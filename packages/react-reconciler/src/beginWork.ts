@@ -24,10 +24,10 @@ export const beginWork = (fiber: FiberNode) => {
 export const updateHostRoot = (wip: FiberNode) => {
   // 计算最新状态
   const baseState = wip.memoizedState;
-  let pendingUpdate = (wip.updateQueue as UpdateQueue<Element | null>).shared
+  const pendingUpdate = (wip.updateQueue as UpdateQueue<Element | null>).shared
     .pending;
   const { memoizedState } = processUpdateQueue(baseState, pendingUpdate);
-  pendingUpdate = null;
+  wip.updateQueue = null; // pendingUpdage = null
   wip.memoizedState = memoizedState;
   const nextChildren = memoizedState;
   // 对比子reactElement和子current fiberNode，生成子wip fiberNode
@@ -57,9 +57,9 @@ export const reconcileChildren = (
     // 所以hostRootFibe在beginWork时已经有current fiberNode和wip fiberNode了，
     // 在reconcileChildren生成子wip fiber时会走这里,hostRootFiber只会标记一个placement flag,最终会将一整颗离屏dom一次性插入界面
     // hostRootFiber下面的fiber节点会走mountChildFibers
-    reconcileChildFibers(wip, current.child, children);
+    wip.child = reconcileChildFibers(wip, current.child, children);
   } else {
     // mount
-    mountChildFibers(wip, null, children);
+    wip.child = mountChildFibers(wip, null, children);
   }
 };

@@ -27,6 +27,7 @@ export const markUpdateFromFiberRoot = (fiber: FiberNode) => {
 function prepareFreshStack(root: FiberRootNode) {
   // FiberRootNode 不能直接当作workInProgress,需要调用创建wip的方法
   workInProgress = createWorkInProgress(root.current, {});
+  console.log(workInProgress, "workInProgress");
 }
 
 // 最终执行的方法叫 renderRoot,参数是一个特殊FiberNode: FiberRootNode
@@ -57,6 +58,7 @@ function renderRoot(root: FiberRootNode) {
 
 function commitRoot(root: FiberRootNode) {
   const finishedWork = root.finishedWork;
+  console.log(finishedWork, "finishedWork");
   if (finishedWork === null) {
     // 排除异常参数
     return;
@@ -68,6 +70,12 @@ function commitRoot(root: FiberRootNode) {
   const subtreeHasEffect =
     (finishedWork.subTreeFlags & MutationMask) !== noFlags;
   const rootHostEffect = (finishedWork.flags & MutationMask) !== noFlags;
+  console.log(
+    "subtreeHasEffect",
+    subtreeHasEffect,
+    "rootHostEffect",
+    rootHostEffect,
+  );
   if (subtreeHasEffect || rootHostEffect) {
     // beforeMutation
     // mutation
@@ -108,7 +116,8 @@ function completeUnitOfWork(fiber: FiberNode) {
   // 此时该fiberNode已经在归阶段：有兄弟节点，右边兄弟节点进入递阶段，没有的话，进入父节点的归阶段
   // 一直遍历兄弟节点执行completeWork，最后进入父节点的归阶段
   do {
-    completeWork(fiber);
+    //issue 这里是传node，不是fiber,不然一直都是对hostText的completeWork
+    completeWork(node);
     const sibling = node.sibling;
 
     if (sibling !== null) {

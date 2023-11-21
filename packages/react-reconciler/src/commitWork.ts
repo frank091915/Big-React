@@ -6,6 +6,7 @@ import { HostComponent, HostRoot, HostText } from "./workTags";
 let nextEffect: FiberNode | null;
 
 export const commitMutationEffects = (finishedWork: FiberNode) => {
+  console.log("commitMutationEffects");
   // 向下遍历，开启外层while循环,找到没有subtreeFlags的节点或是叶子节点
   // 分支语句一: 如果当前节点有child(child !== null)且该节点的subtreeFlags包含MutationMask(nextEffects.subtreeFlags & MutationMask !== noFlags)
   // 分支语句一的执行命令: nextEffect = nextEffect.child 继续最外层循环
@@ -35,6 +36,7 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
 };
 
 function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
+  console.log("commitMutationEffectsOnFiber", finishedWork, "finishedWork");
   // finishedWork是本身包含flags的fiberNode
   const flags = finishedWork.flags;
   if ((flags & placement) !== noFlags) {
@@ -47,13 +49,14 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
 function commitPlacement(finishedWork: FiberNode) {
   // 插入操作需要两个变量: parent的dom, finishedWork对应的dom
   const hostParent = getHostParent(finishedWork);
+  console.log(hostParent, "hostParent");
   if (hostParent !== null) {
     // 然后将finishedWork对应的dom插入parent的dom, appendPlacementNodeIntoContainer
     appendPlacementNodeIntoContainer(finishedWork, hostParent);
   }
 }
 
-function getHostParent(fiber: FiberNode): Container {
+function getHostParent(fiber: FiberNode): Container | null {
   const parent = fiber.return;
   while (parent !== null) {
     const tag = parent.tag;
@@ -73,6 +76,7 @@ function appendPlacementNodeIntoContainer(
   finishedWork: FiberNode,
   hostParent: Container,
 ) {
+  console.log("appendPlacementNodeIntoContainer", finishedWork, hostParent);
   // 传进来的finishedWork不一定就是hostComponent或者hostText,所以要向下遍历找到对应的host节点
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     // 该方法与宿主有关，先放到hostConfig.ts中
