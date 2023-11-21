@@ -1,7 +1,8 @@
 import { beginWork } from "./beginWork";
+import { commitMutationEffects } from "./commitWork";
 import { completeWork } from "./completeWork";
 import { createWorkInProgress, FiberNode, FiberRootNode } from "./fiber";
-import { MutationFlags, noFlags } from "./fiberFlags";
+import { MutationMask, noFlags } from "./fiberFlags";
 import { HostRoot } from "./workTags";
 // 整体递归流程
 // 全局的指针 指向当前FiberNode节点
@@ -65,12 +66,12 @@ function commitRoot(root: FiberRootNode) {
 
   // 判断root.current.alternate(hostRoot.wip)和自身和子节点是否存在flags
   const subtreeHasEffect =
-    (finishedWork.subTreeFlags & MutationFlags) !== noFlags;
-  const rootHostEffect = (finishedWork.flags & MutationFlags) !== noFlags;
+    (finishedWork.subTreeFlags & MutationMask) !== noFlags;
+  const rootHostEffect = (finishedWork.flags & MutationMask) !== noFlags;
   if (subtreeHasEffect || rootHostEffect) {
     // beforeMutation
     // mutation
-    // TODO: 提交mutation
+    commitMutationEffects(finishedWork);
     // fiber树切换发生在 mutation 和 layout阶段之间
     root.current = finishedWork;
     // layout

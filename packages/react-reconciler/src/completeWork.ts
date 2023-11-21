@@ -73,10 +73,11 @@ export const appendAllChildren = (parent: FiberNode, wip: FiberNode) => {
       return;
     }
 
-    // 到此，当前节点已经没有child,是叶子节点了,该遍历到兄弟节点wip节点了
-    // 第二步: 先判断有没有兄弟节点时，没有的话,则会往上,进行父节点的completeWork,有兄弟节点则遍历兄弟节点
+    // 到此，当前节点是hostComponent或hostText节点，或者是没有child的叶子节点了,轮到遍历到兄弟节点了
+    // 第二步: 先判断有没有兄弟节点时，没有的话,则会往上,找祖先节点的兄弟节点
 
-    // 一直往上找到有sibling的节点，跳过之前遍历过的节点，从之前没遍历到的sibling开始遍历
+    // 一直往上找祖先节点的sibling的节点，跳过没有sibling的祖先节点，
+    // 有两种可能,找到祖先节点的sibling重新开始大循环, 没有祖先sibling了，直到node.return === null || node === wip,整个循环停止
     while (node.sibling === null) {
       // 终止情况: 当回到hostRoot或原点时终止遍历
       if (node.return === null || node === wip) {
