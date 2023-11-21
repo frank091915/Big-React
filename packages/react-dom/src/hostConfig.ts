@@ -13,7 +13,7 @@ export const createInstance = (type: string, props: Props) => {
 
 export const appendInitialChild = (
   parent: Instance | Container,
-  child: Instance,
+  child: Instance
 ) => {
   parent.appendChild(child);
 };

@@ -9,7 +9,6 @@ import { Container } from "./hostConfig";
 
 export const createRoot = (element: Container) => {
   const root = createContainer(element);
-  console.log(root, "root");
 
   return {
     render(element: ReactElementType) {

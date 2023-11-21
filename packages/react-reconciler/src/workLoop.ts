@@ -129,4 +129,3 @@ function completeUnitOfWork(fiber: FiberNode) {
     workInProgress = node;
   } while (node !== null);
 }
-console.log(renderRoot, workLoop);
