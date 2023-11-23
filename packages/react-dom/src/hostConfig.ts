@@ -4,16 +4,16 @@ import { Props } from "shared/ReactTypes";
 export type Container = Element;
 export type Instance = Element;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const createInstance = (type: string, props: Props) => {
   // TODO: 处理props
-  console.log(props);
   const element = document.createElement(type);
   return element;
 };
 
 export const appendInitialChild = (
   parent: Instance | Container,
-  child: Instance
+  child: Instance,
 ) => {
   parent.appendChild(child);
 };

@@ -25,15 +25,14 @@ export const createContainer = (container: Container) => {
 // 在执行root.render(<App/>)时，内部会调用updateContainer
 export const updateContainer = (
   reactElement: ReactElementType | null,
-  root: FiberRootNode
+  root: FiberRootNode,
 ) => {
   const hostRootFiber = root.current;
   const update = createUpdate<ReactElementType | null>(reactElement);
   enqueueUpdate(
     hostRootFiber.updateQueue as UpdateQueue<ReactElementType | null>,
-    update
+    update,
   );
-  console.log(hostRootFiber, "hostRootFiber");
   scheduleUpdateOnFiber(hostRootFiber);
   return reactElement;
 };

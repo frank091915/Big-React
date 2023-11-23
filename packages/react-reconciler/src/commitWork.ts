@@ -50,7 +50,6 @@ function commitPlacement(finishedWork: FiberNode) {
   }
   // 插入操作需要两个变量: parent的dom, finishedWork对应的dom
   const hostParent = getHostParent(finishedWork);
-  console.log(hostParent, "hostParent");
   if (hostParent !== null) {
     // 然后将finishedWork对应的dom插入parent的dom, appendPlacementNodeIntoContainer
     appendPlacementNodeIntoContainer(finishedWork, hostParent);
@@ -76,9 +75,8 @@ function getHostParent(fiber: FiberNode): Container | null {
 
 function appendPlacementNodeIntoContainer(
   finishedWork: FiberNode,
-  hostParent: Container
+  hostParent: Container,
 ) {
-  console.log("appendPlacementNodeIntoContainer", finishedWork, hostParent);
   // 传进来的finishedWork不一定就是hostComponent或者hostText,所以要向下遍历找到对应的host节点
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     // 该方法与宿主有关，先放到hostConfig.ts中
