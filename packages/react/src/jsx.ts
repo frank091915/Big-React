@@ -66,7 +66,6 @@ export const jsxDEV = function (type: ReactElementType, config: any) {
   let key: Key = null;
   let ref: Ref = null;
   const props: Props = {};
-
   // 遍历config 给 key ref props赋值
   for (const propNmae in config) {
     const val = config[propNmae];
@@ -83,11 +82,10 @@ export const jsxDEV = function (type: ReactElementType, config: any) {
       continue;
     }
     // 只取config自身的值
-    if (Object.hasOwnProperty.call(config, propNmae)) {
+    if ({}.hasOwnProperty.call(config, propNmae)) {
       props[propNmae] = val;
     }
-
-    // 返回ReactElement元素
-    return ReactElement(type, key, ref, props);
   }
+  // 返回ReactElement元素
+  return ReactElement(type, key, ref, props);
 };

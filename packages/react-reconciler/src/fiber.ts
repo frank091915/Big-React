@@ -121,7 +121,7 @@ export const createFiberFromElement = (element: ReactElementType) => {
   if (typeof type === "string") {
     // 如果是 hostComponent,那么这个reactElement的type为 html的tag字符串
     fiberTag = HostComponent;
-  } else if (type !== "function" && __DEV__) {
+  } else if (typeof type !== "function" && __DEV__) {
     // 开发时尽量想到边界场景，打印消息方便调试
     console.warn("未定义的类型", element);
   }

@@ -1,11 +1,17 @@
 import { ReactElementType } from "shared/ReactTypes";
 import { mountChildFibers, reconcileChildFibers } from "./childFibers";
 import { FiberNode } from "./fiber";
+import { renderWithHooks } from "./fiberHooks";
 import { processUpdateQueue, UpdateQueue } from "./updateQueue";
-import { HostComponent, HostRoot, HostText } from "./workTags";
+import {
+  FunctionComponent,
+  HostComponent,
+  HostRoot,
+  HostText,
+} from "./workTags";
 // 递阶段：beginWork
 export const beginWork = (fiber: FiberNode) => {
-  // 比较 reactElement 和 fiberNode, 生成返回子FiberNode
+  // 比较 reactElement 和 current fiberNode, 生成返回子wip FiberNode
   // 根据tag进行不同处理
   switch (fiber.tag) {
     case HostRoot:
@@ -15,6 +21,8 @@ export const beginWork = (fiber: FiberNode) => {
     case HostText:
       // 没有子节点了 说明已经遍历到叶子节点，开始completeWork
       return null;
+    case FunctionComponent:
+      return updateFunctionComponent(fiber);
     default:
       console.warn("未进行处理的类型");
       break;
@@ -42,6 +50,12 @@ export const updateHostComponent = (wip: FiberNode) => {
   const nextChildren = props.children; // props.children可能是 reactElement对象也可能是 字符串或数字
   // 该过程是通过pendingProps的children生成子fiberNode, 如果组件是<div>react</div>那么他的pendingProps.children是react字符串
   // 对比子reactElement和子current fiberNode，生成子wip fiberNode
+  reconcileChildren(wip, nextChildren);
+  return wip.child;
+};
+
+export const updateFunctionComponent = (wip: FiberNode) => {
+  const nextChildren = renderWithHooks(wip);
   reconcileChildren(wip, nextChildren);
   return wip.child;
 };
