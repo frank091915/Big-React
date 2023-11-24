@@ -5,7 +5,7 @@ import {
 } from "hostConfig";
 import { Container } from "react-dom/src/hostConfig";
 import { FiberNode } from "./fiber";
-import { noFlags } from "./fiberFlags";
+import { NoFlags } from "./fiberFlags";
 import { HostComponent, HostRoot, HostText } from "./workTags";
 export const completeWork = (wip: FiberNode) => {
   const newProps = wip.pendingProps;
@@ -98,7 +98,7 @@ export const appendAllChildren = (parent: Container, wip: FiberNode) => {
 // 可以利用completeWork向上遍历阶段可以将子fiber的flags一层一层冒泡到父fiber节点
 // 给fiberNode添加一个subtreeFlags保存子fiber的flags
 function bubbleProperties(wip: FiberNode) {
-  let subtreeFlags = noFlags;
+  let subtreeFlags = NoFlags;
   let child = wip.child;
   while (child !== null) {
     // 收集子节点和其后代节点上的flags

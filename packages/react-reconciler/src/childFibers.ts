@@ -1,7 +1,7 @@
 import { REACT_ELEMENT_TYPE } from "shared/ReactSymbols";
 import { ReactElementType } from "shared/ReactTypes";
 import { FiberNode, createFiberFromElement } from "./fiber";
-import { placement } from "./fiberFlags";
+import { Placement } from "./fiberFlags";
 import { HostText } from "./workTags";
 
 export const ChildReconciler = (shouldTrackEffects: boolean) => {
@@ -9,7 +9,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     // 当前传入的fiber为才创建的wip fiber,如果alternate为null，说明是首屏渲染
     // 首屏渲染 且 应该追踪副作用的时候 标记副作用
     if (shouldTrackEffects && fiber.alternate === null) {
-      fiber.flags |= placement;
+      fiber.flags |= Placement;
     }
     return fiber;
   }
@@ -71,5 +71,5 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
   };
 };
 
-export const reconcileChildFibers = ChildReconciler(false);
-export const mountChildFibers = ChildReconciler(true);
+export const reconcileChildFibers = ChildReconciler(true);
+export const mountChildFibers = ChildReconciler(false);

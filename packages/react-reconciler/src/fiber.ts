@@ -1,6 +1,6 @@
 import { Props, Key, Ref, ReactElementType } from "shared/ReactTypes";
 import { FunctionComponent, HostComponent, WorkTag } from "./workTags";
-import { FlagType, noFlags } from "./fiberFlags";
+import { FlagType, NoFlags } from "./fiberFlags";
 // 为啥不直接引用当前目录的hostConfig呢，这是因为不同宿主环境有不同的container，
 // 直接写死引用当前目录的hostConfig的话，把hostConfig的实现限制在了react-reconciler包,
 // react-dom包也会有自己的hostConfig, 我猜后面会用到不同环境的hostConfig
@@ -63,8 +63,8 @@ export class FiberNode {
     // 那么alternate指向workInProgress中对应的FiberNode, 反之亦然
     this.alternate = null;
     // 副作用
-    this.flags = noFlags;
-    this.subTreeFlags = noFlags;
+    this.flags = NoFlags;
+    this.subTreeFlags = NoFlags;
   }
 }
 
@@ -100,8 +100,8 @@ export const createWorkInProgress = (
     // update
     wip.pendingProps = current.pendingProps;
     // cleanup effects
-    wip.flags = noFlags;
-    wip.subTreeFlags = noFlags;
+    wip.flags = NoFlags;
+    wip.subTreeFlags = NoFlags;
   }
   // 继承type和type,child,memoizedProps和memoizedState
   wip.type = current.type;
