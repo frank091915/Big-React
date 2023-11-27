@@ -3,7 +3,7 @@ import { Props } from "shared/ReactTypes";
 // 描述宿主环境的文件
 export type Container = Element;
 export type Instance = Element;
-
+console.log("react-dom");
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const createInstance = (type: string, props: Props) => {
   // TODO: 处理props
