@@ -71,7 +71,9 @@ function mountState<State>(
   // @ts-ignore
   const dispatch = dispatchSetState.bind(
     null,
+    // @ts-ignore
     currentlyRenderingFiber,
+    // @ts-ignore
     updateQueue,
   );
   updateQueue.dispatch = dispatch;

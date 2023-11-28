@@ -1,5 +1,6 @@
 {
   "compileOnSave": true,
+  "include": ["./packages/**/*"],
   "compilerOptions": {
    "jsx": "react",
    "target": "ESNext",
@@ -16,7 +17,6 @@
    "noUnusedLocals": false,
    "noUnusedParameters": false,
    "noImplicitReturns": false,
-   "no-unused-vars": false,
    "skipLibCheck": true,
    "baseUrl": "./packages",
    "paths": {
