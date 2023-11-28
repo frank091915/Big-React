@@ -1,4 +1,5 @@
 import { Action } from "shared/ReactTypes";
+import { Dispatch } from "react/src/currentDispatcher";
 // 定义一个泛型类型Update<State> 返回一个包含类型为Action<State>的action属性的对象
 export interface Update<State> {
   // Action<State> 可能是一个任意类型的值，也可能是一个接受该类型值再返回该类型值的函数
@@ -12,6 +13,8 @@ export interface UpdateQueue<State> {
   shared: {
     pending: Update<State> | null;
   };
+  // 兼容hooks，拓展dispatch
+  dispatch: Dispatch<State> | null;
 }
 
 export const createUpdate = <State>(action: Action<State>): Update<State> => {
@@ -26,6 +29,7 @@ export const createUpdateQueue = <State>(): UpdateQueue<State> => {
     shared: {
       pending: null,
     },
+    dispatch: null,
   };
 };
 

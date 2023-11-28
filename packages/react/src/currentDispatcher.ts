@@ -6,6 +6,7 @@ export type Dispatcher = {
 
 export type Dispatch<State> = (action: Action<State>) => void;
 
+// hooks集合
 export const currentDispatcher: { current: Dispatcher | null } = {
   current: null,
 };
