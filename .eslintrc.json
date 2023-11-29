@@ -2,7 +2,8 @@
     "env": {
      "browser": true,
      "es2021": true,
-     "node": true
+     "node": true,
+     "jest": true
     },
     // 在plugins的规则合集里，继承使用哪些规则
     "extends": [
@@ -23,6 +24,7 @@
     "plugins": ["@typescript-eslint", "prettier"],
     "rules": {
      "prettier/prettier": "error",
+     "@typescript-eslint/no-unused-vars": "off",
      "no-case-declarations": "off",
      "no-constant-condition": "off",
      "@typescript-eslint/ban-ts-comment": "off",

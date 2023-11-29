@@ -32,7 +32,7 @@ export const jsx = function (
   for (const propNmae in config) {
     const val = config[propNmae];
     if (propNmae === "key") {
-      if (val != undefined) {
+      if (val !== undefined) {
         key = val + "";
       }
       continue;
@@ -44,21 +44,19 @@ export const jsx = function (
       continue;
     }
     // 只取config自身的值
-    if (Object.hasOwnProperty.call(config, propNmae)) {
+    if ({}.hasOwnProperty.call(config, propNmae)) {
       props[propNmae] = val;
     }
-    // 根据maybeChildren 给props赋值
-    if (maybeChildren) {
-      if (maybeChildren.length === 1) {
-        props.children = maybeChildren[0];
-      } else {
-        props.children = maybeChildren;
-      }
-    }
-
-    // 返回ReactElement元素
-    return ReactElement(type, key, ref, props);
   }
+  // 根据maybeChildren 给props赋值
+  if (maybeChildren.length) {
+    if (maybeChildren.length === 1) {
+      props.children = maybeChildren[0];
+    } else {
+      props.children = maybeChildren;
+    }
+  }
+  return ReactElement(type, key, ref, props);
 };
 
 export const jsxDEV = function (type: ReactElementType, config: any) {
@@ -70,7 +68,7 @@ export const jsxDEV = function (type: ReactElementType, config: any) {
   for (const propNmae in config) {
     const val = config[propNmae];
     if (propNmae === "key") {
-      if (val != undefined) {
+      if (val !== undefined) {
         key = val + "";
       }
       continue;
@@ -88,4 +86,12 @@ export const jsxDEV = function (type: ReactElementType, config: any) {
   }
   // 返回ReactElement元素
   return ReactElement(type, key, ref, props);
+};
+
+export const isValidElement = (object: any) => {
+  return (
+    typeof object === "object" &&
+    object !== null &&
+    object.$$typeof === REACT_ELEMENT_TYPE
+  );
 };

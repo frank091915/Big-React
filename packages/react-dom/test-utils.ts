@@ -3,8 +3,8 @@ import { ReactElementType } from "shared/ReactTypes";
 // 因为对于test-utils来说react 和 react-dom都是外部依赖，打包时不应该包含react-dom代码
 import { createRoot } from "react-dom";
 
-export function renderIntoContainer(element: ReactElementType) {
+export function renderIntoDocument(element: ReactElementType) {
   const div = document.createElement("div");
 
-  createRoot(div).render(element);
+  return createRoot(div).render(element);
 }

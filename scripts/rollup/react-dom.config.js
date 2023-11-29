@@ -58,7 +58,7 @@ export default [
         file: `${pkgDistPath}/test-utils.js`,
         // name 应该不加.js后缀，esm规范下可以正常引入,但是如果在浏览器环境中从window身上引用就需要改为window['test-utils.js'],不然获取不到
         // 所以name直接改成包名,如 react、react-dom
-        name: "test-utils",
+        name: "testUtils",
         // 格式制定为兼容cjs 和ESM的umd格式
         format: "umd",
       },

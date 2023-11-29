@@ -1,9 +1,8 @@
 const { defaults } = require("jest-config");
-
-module.exports = {
+const config = {
   ...defaults,
   rootDir: process.cwd(),
-  modulePathIgnorePatterns: ["<rootDir>/.history"],
+  // modulePathIgnorePatterns: ["<rootDir>/.history"],
   moduleDirectories: [
     // 对于 React ReactDOM
     "dist/node_modules",
@@ -12,3 +11,4 @@ module.exports = {
   ],
   testEnvironment: "jsdom",
 };
+module.exports = config;
