@@ -5,13 +5,14 @@ import {
 } from "hostConfig";
 import { Container } from "react-dom/src/hostConfig";
 import { FiberNode } from "./fiber";
-import { NoFlags } from "./fiberFlags";
+import { NoFlags, Update } from "./fiberFlags";
 import {
   FunctionComponent,
   HostComponent,
   HostRoot,
   HostText,
 } from "./workTags";
+
 export const completeWork = (wip: FiberNode) => {
   const newProps = wip.pendingProps;
   const current = wip.alternate;
@@ -24,8 +25,12 @@ export const completeWork = (wip: FiberNode) => {
       bubbleProperties(wip);
       return null;
     case HostComponent:
-      // current === null时，才是mount阶段
-      if (current === null) {
+      // current === null且wip.stateNode有值时，才是mount阶段
+      // 为什么要判断wip.stateNode？如果wip复用了，会继承current.stateNode
+      // + 新建的fiberNode的stateNode为null，它的instance需要再插入下一层dom节点
+      if (current !== null && wip.stateNode) {
+        // update
+      } else {
         // mount
         // 构建dom 这一步不一定生成浏览器中的dom节点，和宿主环境有关
         const instance = createInstance(wip.type, newProps);
@@ -33,19 +38,23 @@ export const completeWork = (wip: FiberNode) => {
         appendAllChildren(instance, wip);
         // 当前处于归的阶段,当前dom树是目前最靠上的dom节点
         wip.stateNode = instance;
-      } else {
-        // update
       }
       bubbleProperties(wip);
       return null;
     case HostText:
-      if (current === null) {
+      if (current !== null && wip.stateNode) {
+        // update
+        // 判断content是否一致，有变化的话需要打上update的flag
+        const oldContent = current.memoizedProps.content;
+        const newContent = newProps.content;
+        if (oldContent !== newContent) {
+          markUpdate(wip);
+        }
+      } else {
         // mount
         const instance = createTextInstance(newProps.content);
         // hostText没有child所以不需要appendAllChildren
         wip.stateNode = instance;
-      } else {
-        // update
       }
       bubbleProperties(wip);
       return null;
@@ -117,4 +126,8 @@ function bubbleProperties(wip: FiberNode) {
     child = child.sibling;
   }
   wip.subTreeFlags |= subtreeFlags;
+}
+
+function markUpdate(fiber: FiberNode) {
+  fiber.flags != Update;
 }
