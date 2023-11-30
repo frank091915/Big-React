@@ -1,6 +1,17 @@
-import { appendChildToContainer, Container } from "hostConfig";
+import {
+  appendChildToContainer,
+  commitDeletions,
+  commitUpdate,
+  Container,
+} from "hostConfig";
 import { FiberNode, FiberRootNode } from "./fiber";
-import { MutationMask, NoFlags, Placement } from "./fiberFlags";
+import {
+  ChildDeletion,
+  MutationMask,
+  NoFlags,
+  Placement,
+  Update,
+} from "./fiberFlags";
 import { HostComponent, HostRoot, HostText } from "./workTags";
 
 let nextEffect: FiberNode | null;
@@ -42,6 +53,24 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
     // 执行placement操作后,消除placement的flag
     finishedWork.flags &= ~Placement;
   }
+
+  // 处理update flags
+  if ((flags & Update) !== NoFlags) {
+    // commiteUpdate的逻辑取决于宿主环境，放到react-dom的hostConfig中实现
+    commitUpdate(finishedWork);
+    // 执行placement操作后,消除placement的flag
+    finishedWork.flags &= ~Update;
+  }
+
+  // 处理childDeletions flags
+  if ((flags & ChildDeletion) !== NoFlags) {
+    // commiteUpdate的逻辑取决于宿主环境，放到react-dom的hostConfig中实现
+    finishedWork.deletions?.forEach((childToDelete) => {
+      commitDeletions(childToDelete);
+    });
+    // 执行placement操作后,消除placement的flag
+    finishedWork.flags &= ~ChildDeletion;
+  }
 }
 
 function commitPlacement(finishedWork: FiberNode) {
@@ -56,7 +85,7 @@ function commitPlacement(finishedWork: FiberNode) {
   }
 }
 
-function getHostParent(fiber: FiberNode): Container | null {
+export function getHostParent(fiber: FiberNode): Container | null {
   let parent = fiber.return;
   while (parent !== null) {
     const tag = parent.tag;
