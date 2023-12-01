@@ -19,10 +19,13 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
   }
 
   function deleteChild(retureFiber: FiberNode, childToDelete: FiberNode) {
+    if (!shouldTrackEffects) {
+      return;
+    }
     // 给fiberNode拓展一个deletion属性，保存需要删除的子FiberNode
-    let deletions = retureFiber.deletions;
+    const deletions = retureFiber.deletions;
     if (deletions === null) {
-      deletions = [childToDelete];
+      retureFiber.deletions = [childToDelete];
       retureFiber.flags |= ChildDeletion;
     } else {
       deletions.push(childToDelete);
@@ -97,7 +100,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
   };
 
   function useFiber(fiber: FiberNode, props: Props) {
-    const existing = createWorkInProgress(fiber, fiber.pendingProps);
+    const existing = createWorkInProgress(fiber, props);
     existing.index = 0;
     existing.sibling = null;
     return existing;

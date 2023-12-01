@@ -53,7 +53,6 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
     // 执行placement操作后,消除placement的flag
     finishedWork.flags &= ~Placement;
   }
-
   // 处理update flags
   if ((flags & Update) !== NoFlags) {
     // commiteUpdate的逻辑取决于宿主环境，放到react-dom的hostConfig中实现
@@ -110,8 +109,10 @@ function appendPlacementNodeIntoContainer(
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     // 该方法与宿主有关，先放到hostConfig.ts中
     appendChildToContainer(hostParent, finishedWork.stateNode);
+    return;
   }
   const child = finishedWork.child;
+  // 如果当前fiber节点不是host类型,那么它可能拥有多个子节点，而且处于不同层级，所以要将下面第一层所有子host类型fiber插入到hostParent中
   if (child !== null) {
     appendPlacementNodeIntoContainer(child, hostParent);
     let sibling = child.sibling;

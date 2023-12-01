@@ -100,7 +100,7 @@ export const createWorkInProgress = (
     current.alternate = wip;
   } else {
     // update
-    wip.pendingProps = current.pendingProps;
+    wip.pendingProps = pendingProps;
     wip.deletions = current.deletions;
     // cleanup effects
     wip.flags = NoFlags;

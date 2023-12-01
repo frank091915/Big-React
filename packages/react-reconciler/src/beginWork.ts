@@ -2,7 +2,7 @@ import { ReactElementType } from "shared/ReactTypes";
 import { mountChildFibers, reconcileChildFibers } from "./childFibers";
 import { FiberNode } from "./fiber";
 import { renderWithHooks } from "./fiberHooks";
-import { processUpdateQueue, UpdateQueue } from "./updateQueue";
+import { processUpdateQueue, Update, UpdateQueue } from "./updateQueue";
 import {
   FunctionComponent,
   HostComponent,
@@ -32,10 +32,10 @@ export const beginWork = (fiber: FiberNode) => {
 export const updateHostRoot = (wip: FiberNode) => {
   // 计算最新状态
   const baseState = wip.memoizedState;
-  const pendingUpdate = (wip.updateQueue as UpdateQueue<Element | null>).shared
-    .pending;
+  const updateQueue = wip.updateQueue as UpdateQueue<Element>;
+  const pendingUpdate = updateQueue.shared.pending;
   const { memoizedState } = processUpdateQueue(baseState, pendingUpdate);
-  wip.updateQueue = null; // pendingUpdage = null
+  updateQueue.shared.pending = null; // !! 注意不是pendingUpdage = null，是将pendingUpdate.shared.pending改为null
   wip.memoizedState = memoizedState;
   const nextChildren = memoizedState;
   // 对比子reactElement和子current fiberNode，生成子wip fiberNode

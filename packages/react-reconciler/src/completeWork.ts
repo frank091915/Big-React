@@ -129,5 +129,5 @@ function bubbleProperties(wip: FiberNode) {
 }
 
 function markUpdate(fiber: FiberNode) {
-  fiber.flags != Update;
+  fiber.flags |= Update;
 }

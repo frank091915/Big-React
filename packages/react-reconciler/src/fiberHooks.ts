@@ -6,12 +6,14 @@ import {
   createUpdate,
   createUpdateQueue,
   enqueueUpdate,
+  processUpdateQueue,
   UpdateQueue,
 } from "./updateQueue";
 import { scheduleUpdateOnFiber } from "./workLoop";
 
 let currentlyRenderingFiber: FiberNode | null = null;
-let workInProgressHook: Hook | null = null;
+let workInProgressHook: Hook | null = null; // mount阶段,每次调用react hook时,记录最近一次wip hook对象,用于判断是不是fiberNode第一个hook对象,然后连接新hook对象
+let currentHook: Hook | null = null; // update阶段,每次调用react hook时,记录最近一次current hook对象,用于判断是不是fiberNode第一个hook对象,然后连接新hook对象
 const { currentDispatcher } = internals;
 
 export type Hook = {
@@ -35,7 +37,9 @@ export const renderWithHooks = (wip: FiberNode) => {
     // mount阶段 给currentDispatcher赋值mount阶段的hooks集合
     currentDispatcher.current = HooksDispatcherOnMount;
   } else {
+    // 调用mount阶段导出的dispatch方法时，会从hostRootFiber开始beginWork和completeWork,调用FC时，有cerrent会走updte分支
     // update阶段
+    currentDispatcher.current = HooksDispatcherOnUpdate;
   }
 
   //重置操作
@@ -45,6 +49,10 @@ export const renderWithHooks = (wip: FiberNode) => {
 
 export const HooksDispatcherOnMount: Dispatcher = {
   useState: mountState,
+};
+// update阶段 hooks集合
+export const HooksDispatcherOnUpdate: Dispatcher = {
+  useState: updateState,
 };
 
 function mountState<State>(
@@ -80,6 +88,24 @@ function mountState<State>(
   return [memoizedState, dispatch];
 }
 
+function updateState<State>(): [State, Dispatch<State>] {
+  // 创建mount时的hook对象
+  const hook = updateWorkInProgressHook();
+
+  // 计算updateState中state
+  const queue = hook.updateQueue as UpdateQueue<State>;
+  const pendingUpdate = (hook.updateQueue as UpdateQueue<State>).shared.pending;
+  if (pendingUpdate) {
+    const { memoizedState } = processUpdateQueue<State>(
+      hook.memoizedState,
+      pendingUpdate,
+    );
+    hook.memoizedState = memoizedState;
+  }
+  // 直接返回之前的dispatch方法
+  return [hook.memoizedState, queue.dispatch as Dispatch<State>];
+}
+
 // dispatch实现
 function dispatchSetState<State>(
   fiber: FiberNode,
@@ -113,6 +139,58 @@ function mountWorkInProgressHook(): Hook {
     // 这是后面的hook,通过next串联成单向链表
     workInProgressHook.next = hook;
     workInProgressHook = hook;
+  }
+  return workInProgressHook;
+}
+
+function updateWorkInProgressHook(): Hook {
+  // TODO: 差一个 处理render阶段触发的更新
+  let currentNextHook: Hook | null = null;
+
+  // 如果currentHook为null,说明这是update阶段第一个hook
+  if (currentHook === null) {
+    // 从current中获取之前的hook
+    const current = currentlyRenderingFiber?.alternate;
+    if (current !== null) {
+      currentNextHook = current?.memoizedState;
+    } else {
+      // current fiber为null的话，说明是mount阶段，不应该走到updateWorkInProgressHook中
+      currentNextHook = null;
+    }
+  } else {
+    // 这是后面的hook,通过next串联成单向链表
+    currentNextHook = currentHook.next;
+  }
+
+  if (currentNextHook === null) {
+    // mount/update h1 h2 h3
+    // update       h1 h2 h3 h4(currentHook.next 没有hook了)
+    // 多了一个hook调用，说明hooks是在条件语句中执行
+    if (__DEV__) {
+      console.warn();
+    }
+  }
+
+  currentHook = currentNextHook as Hook;
+  // 为啥要创建一个新对象，后面对hook对象有修改操作吗？
+  const newHook: Hook = {
+    memoizedState: currentHook.memoizedState,
+    updateQueue: currentHook.updateQueue,
+    next: null,
+  };
+
+  // 始终还是根据workInProgressHook判断，是第一个hook还是后续hook
+  if (workInProgressHook === null) {
+    // currentlyRenderingFiber 为null，说明没有对应的fiber,没在FC中执行，应该提醒开发者正确使用FC
+    if (currentlyRenderingFiber === null) {
+      throw new Error("请在函数组件中使用hooks");
+    }
+    workInProgressHook = newHook;
+    currentlyRenderingFiber.memoizedState = newHook;
+  } else {
+    // 这是后面的hook,通过next串联成单向链表
+    workInProgressHook.next = newHook;
+    workInProgressHook = newHook;
   }
   return workInProgressHook;
 }

@@ -125,5 +125,6 @@ export const removeChild = (
   child: Instance | TextInstance,
   container: Container,
 ) => {
+  console.log("removeChild");
   container.removeChild(child);
 };

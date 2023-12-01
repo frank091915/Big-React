@@ -3,15 +3,15 @@ import ReactDOM from "react-dom/client";
 
 function Child() {
   return (
-    <span id="span1">
+    <span>
       <Child1></Child1>
     </span>
   );
 }
 function Child1() {
-  const [wordings, setWordings] = useState("Finn's useState");
-  console.log(setWordings);
-  return <span id="span">{wordings}</span>;
+  const [num, setNum] = useState("Finn's useState");
+  window.setNum = setNum
+  return num === 3 ? <p>{num}</p> : <span>{num}</span>;
 }
 function App() {
   return (

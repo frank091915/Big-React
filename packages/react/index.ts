@@ -2,7 +2,7 @@ import currentDispatcher, {
   Dispatcher,
   resolveDispatcher,
 } from "./src/currentDispatcher";
-import { jsx, isValidElement as isValidElementFn } from "./src/jsx";
+import { jsx, isValidElement as isValidElementFn, jsxDEV } from "./src/jsx";
 
 // 暴露useState hook
 // 这里返回的是一个可以调用真正dispatcher中useState的函数，这样开发者就不能直接操作原始的hooks
@@ -17,5 +17,5 @@ export const _SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = {
 };
 export const version = "0.0.0";
 // TODO: 根据环境导出jsx(生产环境)还是jsxDEV(开发环境)
-export const createElement = jsx;
+export const createElement = jsxDEV;
 export const isValidElement = isValidElementFn;
