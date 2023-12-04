@@ -4,6 +4,7 @@ import {
   createTextInstance,
 } from "hostConfig";
 import { Container } from "react-dom/src/hostConfig";
+import { DomElement, updateFiberProps } from "react-dom/src/synthetic";
 import { FiberNode } from "./fiber";
 import { NoFlags, Update } from "./fiberFlags";
 import {
@@ -30,6 +31,9 @@ export const completeWork = (wip: FiberNode) => {
       // + 新建的fiberNode的stateNode为null，它的instance需要再插入下一层dom节点
       if (current !== null && wip.stateNode) {
         // update
+        // 可以挨个判断那些prop发生变化，然后放到fiber.updateQueue中[n(key), n+1(value)]
+        // 直接全部更新也不会存在性能问题
+        updateFiberProps(wip.stateNode as unknown as DomElement, newProps);
       } else {
         // mount
         // 构建dom 这一步不一定生成浏览器中的dom节点，和宿主环境有关

@@ -10,8 +10,7 @@ function Child() {
 }
 function Child1() {
   const [num, setNum] = useState("Finn's useState");
-  window.setNum = setNum
-  return num === 3 ? <p>{num}</p> : <span>{num}</span>;
+  return <p onClick={()=>setNum(666)}>{num}</p>;
 }
 function App() {
   return (

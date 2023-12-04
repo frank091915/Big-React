@@ -6,6 +6,7 @@ import {
   HostText,
 } from "react-reconciler/src/workTags";
 import { Props } from "shared/ReactTypes";
+import { DomElement, updateFiberProps } from "./synthetic";
 
 // 描述宿主环境的文件
 export type Container = Element;
@@ -15,6 +16,7 @@ export type TextInstance = Text;
 export const createInstance = (type: string, props: Props) => {
   // TODO: 处理props
   const element = document.createElement(type);
+  updateFiberProps(element as unknown as DomElement, props);
   return element;
 };
 

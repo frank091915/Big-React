@@ -87,6 +87,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
         // tag类型没变，可以复用
         const existing = useFiber(currentFiber, { content });
         existing.return = returnFiber;
+        return existing;
       } else {
         // tag变了，先删除，比如<div> => 666
         deleteChild(returnFiber, currentFiber);
