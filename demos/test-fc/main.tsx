@@ -9,8 +9,8 @@ function Child() {
   );
 }
 function Child1() {
-  const [num, setNum] = useState("Finn's useState");
-  return <p onClick={()=>setNum(666)}>{num}</p>;
+  const [num, setNum] = useState(666);
+  return <p onClick={()=>setNum((num) => num + 1)}>{num}</p>;
 }
 function App() {
   return (

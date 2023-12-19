@@ -114,7 +114,7 @@ export const commitNestedComponent = (
       if (node.return === null || node.return === root) {
         return;
       }
-      // 向上归，如果有sibling节点，向下遍历sibling分支，直到会到root终止遍历children进行delete操作
+      // 向上归，如果有sibling节点，向下遍历sibling分支，直到回到root终止遍历children进行delete操作
       node = node.return;
     }
 
@@ -127,6 +127,5 @@ export const removeChild = (
   child: Instance | TextInstance,
   container: Container,
 ) => {
-  console.log("removeChild");
   container.removeChild(child);
 };

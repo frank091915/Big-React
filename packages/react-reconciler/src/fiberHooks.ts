@@ -27,10 +27,6 @@ export const renderWithHooks = (wip: FiberNode) => {
   currentlyRenderingFiber = wip;
   wip.memoizedState = null; // 先赋值为null,后面再重新创建hooks链表
 
-  const component = wip.type;
-  const pendingProps = wip.pendingProps;
-  const children = component(pendingProps);
-
   const current = wip.alternate;
 
   if (current === null) {
@@ -41,6 +37,13 @@ export const renderWithHooks = (wip: FiberNode) => {
     // update阶段
     currentDispatcher.current = HooksDispatcherOnUpdate;
   }
+
+  const component = wip.type;
+  const pendingProps = wip.pendingProps;
+  // 执行fc函数时，返回jsx,babel会解析为jsx方法调用，最终返回reactElement对象，就算内部返回的是另一个FC,也是jsx调用(type,configs)
+  // 这个阶段FC里的hooks也会执行，在fiber.memoizedState上保存hook链表,链表上的hook也有自己的memoizedState,updateQueue和连接下一个hook对象的next属性
+  // hooks在每次render阶段调用
+  const children = component(pendingProps);
 
   //重置操作
   currentlyRenderingFiber = null;
@@ -115,7 +118,8 @@ function dispatchSetState<State>(
   // 创建update对象{action: Action<State>}
   const update = createUpdate(action);
   // 向updateQueue中插入update
-  // TODO: 注意这里的updateQueue是在hook对象上(fiber.memoizedState.updateQueue)，调度更新后，是执行fiber.updateQueue
+  // updateQueue是在hook对象上(fiber.memoizedState.updateQueue)，调度更新后，
+  // updateState函数会先执行hook当前的pending update，修改hook.memoizedState
   enqueueUpdate(updateQueue, update);
   // 开始调度更新
   scheduleUpdateOnFiber(fiber);
@@ -145,6 +149,8 @@ function mountWorkInProgressHook(): Hook {
 
 function updateWorkInProgressHook(): Hook {
   // TODO: 差一个 处理render阶段触发的更新
+  // 比如 const [num, setNum] = useState(6);
+  // 立马调用dispatch setNum(666)
   let currentNextHook: Hook | null = null;
 
   // 如果currentHook为null,说明这是update阶段第一个hook
@@ -167,7 +173,9 @@ function updateWorkInProgressHook(): Hook {
     // update       h1 h2 h3 h4(currentHook.next 没有hook了)
     // 多了一个hook调用，说明hooks是在条件语句中执行
     if (__DEV__) {
-      console.warn();
+      throw new Error(
+        `组件${currentlyRenderingFiber?.type}本次执行时,hook比上一次多`,
+      );
     }
   }
 

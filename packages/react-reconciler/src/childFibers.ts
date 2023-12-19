@@ -75,7 +75,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     return fiber;
   };
 
-  // 叶子节点,父节点为原生html标签,传入的content为string或number
+  // 叶子节点,父节点为原生html标签或FC,传入的content为string或number
   const reconcileSingleTextNode = (
     returnFiber: FiberNode,
     currentFiber: FiberNode | null,

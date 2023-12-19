@@ -49,6 +49,7 @@ export const completeWork = (wip: FiberNode) => {
       if (current !== null && wip.stateNode) {
         // update
         // 判断content是否一致，有变化的话需要打上update的flag
+        // memoizedProps是在beginWork结束后被赋值了pendingProps
         const oldContent = current.memoizedProps.content;
         const newContent = newProps.content;
         if (oldContent !== newContent) {
