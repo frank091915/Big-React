@@ -91,6 +91,127 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     return fiber;
   };
 
+  type ExistingChildrenType = Map<string | number, FiberNode>;
+
+  function updateFromMap(
+    returnFiber: FiberNode,
+    existingChildrenMap: ExistingChildrenType,
+    index: number,
+    element: any,
+  ) {
+    const keyToUse = element.key !== null ? element.key : index;
+    const before = existingChildrenMap.get(keyToUse);
+
+    // 当前element是string或number的情况，说明最新的fiber是HostText, 判断之前fiber是否也是HostText类型
+    if (typeof element === "string" || typeof element === "number") {
+      // 如果之前的fiber也是HostText类型，可以复用
+      if (before?.tag === HostText) {
+        // 将复用的fiber从existingChildrenMap中删掉
+        existingChildrenMap.delete(keyToUse);
+        return useFiber(before, { content: element + "" });
+      }
+      // 新建一个HostText类型的fiberNode
+      return new FiberNode(HostText, { content: element + "" }, null);
+    }
+    // ReactElement 对象或函数类型
+    if (typeof element === "object" && element !== "null") {
+      switch (element.$$typeof) {
+        case REACT_ELEMENT_TYPE: {
+          if (before) {
+            // key相同，type也相同才能复用
+            if (before.type === element.type) {
+              existingChildrenMap.delete(keyToUse);
+              return useFiber(before, element.props);
+            }
+            return createFiberFromElement(element);
+          }
+        }
+      }
+
+      if (Array.isArray(element) && __DEV__) {
+        console.warn("未实现的数组子节点类型");
+      }
+    }
+
+    return null;
+  }
+
+  function reconcileChildrenArray(
+    returnFiber: FiberNode,
+    currentFirstChild: FiberNode | null,
+    newChildren: any[],
+  ) {
+    // 1 将当前子节点存入 map
+    const existingChildrenMap: ExistingChildrenType = new Map();
+    let lastPlacedIndex: number = 0;
+    let lastNewFiber: FiberNode | null = null;
+    let firstNewFiber: FiberNode | null = null;
+    let current = currentFirstChild;
+    while (current !== null) {
+      existingChildrenMap.set(
+        current.key ? current.key : current.index,
+        current,
+      );
+      current = current.sibling;
+    }
+
+    // 遍历新子节点的element
+    for (let i = 0; i < newChildren.length; i++) {
+      // 2 判断是否能复用
+      const after = newChildren[i];
+      const newFiber = updateFromMap(
+        returnFiber,
+        existingChildrenMap,
+        i,
+        after,
+      );
+
+      // jsx返回false或者null
+      if (newFiber === null) {
+        continue;
+      }
+
+      // 3 判断是插入或移动
+      newFiber.index = i; // 给多节点fiber加上index，用于之后的reconcile
+      newFiber.return = returnFiber;
+
+      if (lastNewFiber === null) {
+        firstNewFiber = newFiber;
+        lastNewFiber = newFiber;
+      } else {
+        // 将新fiber和上一次的fiber链接
+        lastNewFiber.sibling = newFiber;
+        lastNewFiber = newFiber;
+      }
+
+      if (!shouldTrackEffects) {
+        continue;
+      }
+
+      //  newFiber.alternate !== null,说明newFiber复用了current fiber
+      const currentFiber = newFiber.alternate;
+      if (currentFiber !== null) {
+        // 比较这一次复用节点index是否比上一次复用节点的index小，如果是说明那么节点向右移了
+        if (currentFiber.index < lastPlacedIndex) {
+          newFiber.flags |= Placement;
+        } else {
+          // lastPlacedIndex始终是原来节点位置中最右边可复用的fiber索引,所以拿后续可复用节点的current位置和lastPlacedIndex比较
+          lastPlacedIndex = currentFiber.index;
+        }
+      } else {
+        // current === null，说明是新建的fiber
+        newFiber.flags |= Placement;
+      }
+
+      // 4 将existingChildrenMap剩余的节点删除
+      existingChildrenMap.forEach((fiber) => {
+        deleteChild(returnFiber, fiber);
+      });
+    }
+
+    return firstNewFiber;
+  }
+
   // 叶子节点,父节点为原生html标签或FC,传入的content为string或number
   const reconcileSingleTextNode = (
     returnFiber: FiberNode,
@@ -129,7 +250,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     currentFiber: FiberNode | null,
     newChild?: ReactElementType,
   ) {
-    // 先判断ReactElementType类型, 对象 还是文本节点
+    // 先判断ReactElementType类型, 对象或函数 HostComponent 或 FunctionComponent
     if (typeof newChild === "object" && newChild !== null) {
       switch (newChild?.$$typeof) {
         case REACT_ELEMENT_TYPE:
@@ -142,7 +263,14 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
           }
       }
     }
-    // TODO: 多节点类型
+
+    // 多节点类型
+    if (Array.isArray(newChild)) {
+      // 如果newChild为多节点,那么currentFiber就是一串child链表,currentFiber也是第一个child
+      return reconcileChildrenArray(returnFiber, currentFiber, newChild);
+    }
+
+    // 还是文本节点
     if (typeof newChild === "string" || typeof newChild === "number") {
       // updateHostComponent -> ChildReconciler -> reconcileChildFibers
       // 此时newChild的reactElement为字符串或number
