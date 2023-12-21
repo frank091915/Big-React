@@ -22,7 +22,7 @@ export const createContainer = (container: Container) => {
   return root;
 };
 
-// 在执行root.render(<App/>)时，内部会调用updateContainer
+// 在执行root.render(<App/>)时，接受ReactElement通常为组件根节点<App/>,执行updateContainer
 export const updateContainer = (
   reactElement: ReactElementType | null,
   root: FiberRootNode,

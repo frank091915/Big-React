@@ -32,6 +32,18 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     }
   }
 
+  function deleteRemainingChildren(
+    returnFiber: FiberNode,
+    firstChildToDelete: FiberNode | null,
+  ) {
+    let currentChildToDelete: FiberNode | null;
+    currentChildToDelete = firstChildToDelete;
+    while (currentChildToDelete !== null) {
+      deleteChild(returnFiber, currentChildToDelete);
+      currentChildToDelete = currentChildToDelete.sibling;
+    }
+  }
+
   // 根据reactElement创建子fiber
   const reconcileSingleElement = (
     returnFiber: FiberNode,
@@ -40,7 +52,7 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
   ) => {
     // 如果当前currentFiber为null,说明为mount阶段
     // update阶段需要判断是否能复用, key和type同时不变则可以，否则先修改returnFiber的deletiongs,然后打上childDeletion的flag
-    work: if (currentFiber !== null) {
+    while (currentFiber !== null) {
       const key = currentFiber.key;
       const type = currentFiber.type;
       if (key === element.key) {
@@ -49,23 +61,27 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
           if (type === element.type) {
             // 复用 注意这里用的props是babel解析jsx后拿到在标签上的props，不是currentFiber上的，currentFiber是旧的props
             const existing = useFiber(currentFiber, element.props);
+            // 单节点diff时 key相同,type相同, 说明其他节点不会复用，直接删除
+            deleteRemainingChildren(returnFiber, currentFiber.sibling);
             existing.return = returnFiber;
             return existing;
           } else {
-            // key相当，但是type不相等，说明html标签改变了，不能复用
-            // 当前子节点需要删除删除
+            // key相当，但是type不相等，可能是html标签改变了，不能复用
+            // 唯一一个key相同的子节点不能复用，可以直接删掉后面的节点
             deleteChild(returnFiber, currentFiber);
-            break work;
+            deleteRemainingChildren(returnFiber, currentFiber.sibling);
+            break;
           }
         } else {
           if (__DEV__) {
             console.warn("未实现的类型");
           }
-          break work;
+          break;
         }
       } else {
         // 新旧key不同,需要删除
         deleteChild(returnFiber, currentFiber);
+        currentFiber = currentFiber.sibling;
       }
     }
     // 根据reactElement创建fiber
@@ -81,16 +97,18 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
     currentFiber: FiberNode | null,
     content: string | number,
   ) => {
-    if (currentFiber !== null) {
+    while (currentFiber !== null) {
       // update阶段
       if (currentFiber.tag === HostText) {
         // tag类型没变，可以复用
         const existing = useFiber(currentFiber, { content });
         existing.return = returnFiber;
+        deleteRemainingChildren(returnFiber, currentFiber);
         return existing;
       } else {
         // tag变了，先删除，比如<div> => 666
         deleteChild(returnFiber, currentFiber);
+        currentFiber = currentFiber.sibling;
       }
     }
     // 直接创建HostTextComponent
