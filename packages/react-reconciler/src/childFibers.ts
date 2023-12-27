@@ -124,6 +124,8 @@ export const ChildReconciler = (shouldTrackEffects: boolean) => {
               return useFiber(before, element.props);
             }
             return createFiberFromElement(element);
+          } else {
+            return createFiberFromElement(element);
           }
         }
       }

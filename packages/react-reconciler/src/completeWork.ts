@@ -104,7 +104,9 @@ export const appendAllChildren = (parent: Container, wip: FiberNode) => {
     // 有两种可能,找到祖先节点的sibling重新开始大循环, 没有祖先sibling了，直到node.return === null || node === wip,整个循环停止
     while (node.sibling === null) {
       // 终止情况: 当回到hostRoot或原点时终止遍历
-      if (node.return === null || node === wip) {
+      // ！！ 之前判断node === wip,这个不严谨，如果wip的child刚好是叶子节点且没有sibling的时候，不会理解结束当前节点的appendAllChildren
+      // 而且会把wip的兄弟节点（该节点还没开始completeWork），当作child，将其stateNode(null)插入wip的instance,所以会报错
+      if (node.return === null || node.return === wip) {
         return;
       }
       // 向上遍历

@@ -3,6 +3,8 @@ import {
   commitDeletions,
   commitUpdate,
   Container,
+  insertChildToContainer,
+  Instance,
 } from "hostConfig";
 import { FiberNode, FiberRootNode } from "./fiber";
 import {
@@ -78,9 +80,62 @@ function commitPlacement(finishedWork: FiberNode) {
   }
   // 插入操作需要两个变量: parent的dom, finishedWork对应的dom
   const hostParent = getHostParent(finishedWork);
+
+  const hostSibling = getHostSibling(finishedWork);
   if (hostParent !== null) {
-    // 然后将finishedWork对应的dom插入parent的dom, appendPlacementNodeIntoContainer
-    appendPlacementNodeIntoContainer(finishedWork, hostParent);
+    // 然后将finishedWork对应的dom插入parent的dom, insertOrAppendPlacementNodeIntoContainer
+    insertOrAppendPlacementNodeIntoContainer(
+      finishedWork,
+      hostParent,
+      hostSibling,
+    );
+  }
+}
+
+export function getHostSibling(fiber: FiberNode) {
+  let node: FiberNode = fiber;
+  findHostSibling: while (true) {
+    // node没有sibling时，向上遍历, 直到找到有sibling的祖先节点，如果祖先节点是HostRoot/HostComponent类型或者hostRootFiber(parent === null)
+    // 如果return节点是hostComponent,那么该节点在上一层级没有兄弟节点，再往上找，就算找到host类型的sibling，也是其祖先节点层级的hostSibling
+    while (node.sibling === null) {
+      //
+      const parent = node.return;
+      if (
+        parent === null ||
+        parent.tag === HostRoot ||
+        parent.tag === HostComponent
+      ) {
+        return null;
+      }
+      node = parent;
+    }
+
+    // 将node指向其sibling，向下遍历寻找host类型sibling
+    node.sibling.return = node;
+    node = node.sibling;
+
+    // 当前节点不是host类型时，一直往下遍历，直到找到host类型节点，如果中途遇到有placement副作用或叶子节点，结束循环
+    while (node.tag !== HostText && node.tag !== HostComponent) {
+      // 判断是否有placement副作用，如果有的话，则是不稳定的节点，不再往下找，开始下一轮大循环从它的sibling开始找
+      if ((node.flags &= Placement) !== NoFlags) {
+        continue findHostSibling;
+      }
+
+      if (node.child === null) {
+        // 找到叶子节点后，开始从其sibling开始找，没有的话，向上遍历
+        continue findHostSibling;
+      } else {
+        node.child.return = node;
+        node = node.child;
+      }
+    }
+
+    // 执行到这里，node是host类型
+    // 判断是不是有placement副作用，没有的话返回stateNode
+    // 如果有副作用，开始下一轮大循环
+    if ((node.flags &= Placement) !== NoFlags) {
+      return node.stateNode;
+    }
   }
 }
 
@@ -101,23 +156,28 @@ export function getHostParent(fiber: FiberNode): Container | null {
   return null;
 }
 
-function appendPlacementNodeIntoContainer(
+function insertOrAppendPlacementNodeIntoContainer(
   finishedWork: FiberNode,
   hostParent: Container,
+  before?: Instance,
 ) {
   // 传进来的finishedWork不一定就是hostComponent或者hostText,所以要向下遍历找到对应的host节点
   if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
     // 该方法与宿主有关，先放到hostConfig.ts中
-    appendChildToContainer(hostParent, finishedWork.stateNode);
+    if (before) {
+      insertChildToContainer(finishedWork.stateNode, hostParent, before);
+    } else {
+      appendChildToContainer(hostParent, finishedWork.stateNode);
+    }
     return;
   }
   const child = finishedWork.child;
   // 如果当前fiber节点不是host类型,那么它可能拥有多个子节点，而且处于不同层级，所以要将下面第一层所有子host类型fiber插入到hostParent中
   if (child !== null) {
-    appendPlacementNodeIntoContainer(child, hostParent);
+    insertOrAppendPlacementNodeIntoContainer(child, hostParent, before);
     let sibling = child.sibling;
     while (sibling !== null) {
-      appendPlacementNodeIntoContainer(sibling, hostParent);
+      insertOrAppendPlacementNodeIntoContainer(sibling, hostParent, before);
       sibling = sibling.sibling;
     }
   }
